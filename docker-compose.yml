@@ -1,0 +1,58 @@
+version: '3.3'
+services:
+  nodered:
+    container_name: myNodered
+    hostname: mynodered
+    image: nodered/node-red
+    ports:
+      - "9011:1880"
+    volumes:
+      - ./data/nodered:/data
+    networks:
+      - mynet
+  db:
+    image: mysql:5.7
+    container_name: dbsql
+    hostname: mysql_ht
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+    volumes:
+      - ./data/sql:/var/lib/mysql
+    networks:
+      - mynet
+  phpmyadmin:
+    container_name : myphpmyadmin
+    hostname : myphpmyadmin
+    image : phpmyadmin/phpmyadmin
+    restart : always
+    ports :
+      - "8090:80"
+    depends_on :
+      - db
+    environment:
+      PMA_HOST : db
+      MYSQL_ROOT_PASSWORD : mysql
+    networks:
+      - mynet
+  emqx:
+    hostname: emqx_ht
+    container_name: myemqx
+    image: emqx:latest
+    restart: always
+    volumes:
+      - ./emqx/vol-emqx-data:/opt/emqx/data
+      - ./emqx/vol-emqx-log:/opt/emqx/log
+    ports:
+      - "18083:18083"
+      - "31883:1883"
+      - "38883:8883"
+      - "38083:8083"
+      - "38084:8084"
+    networks:
+      - mynet
+networks:
+  mynet:
+    driver: bridge
